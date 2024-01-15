@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Subscription, map, switchMap } from 'rxjs';
+import { Subscription, filter, map, switchMap } from 'rxjs';
 import { Item, Livro } from 'src/app/models/interfaces';
 import { LivroVolumeInfo } from 'src/app/models/livroVolumeInfo';
 import { LivroService } from 'src/app/service/livro.service';
@@ -16,7 +16,8 @@ export class ListaLivrosComponent {
   constructor(private service: LivroService) {}
 
   livrosEncontrados$ = this.campoBusca.valueChanges.pipe(
-    switchMap((chamada) => this.service.buscar(chamada)),
+    filter((valorDigitado) => valorDigitado.length > 3),
+    switchMap((valorDigitado) => this.service.buscar(valorDigitado)),
     map((items) => this.livrosResultadosParaLivros(items))
   );
 
