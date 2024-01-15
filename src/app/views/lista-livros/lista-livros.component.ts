@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { catchError, debounceTime, distinctUntilChanged, filter, map, switchMap, throwError } from 'rxjs';
-import { Item } from 'src/app/models/interfaces';
+import { catchError, debounceTime, distinctUntilChanged, filter, map, of, switchMap, throwError } from 'rxjs';
+import { Item, LivrosResultado } from 'src/app/models/interfaces';
 import { LivroVolumeInfo } from 'src/app/models/livroVolumeInfo';
 import { LivroService } from 'src/app/service/livro.service';
 
@@ -15,6 +15,7 @@ const PAUSA = 300;
 export class ListaLivrosComponent {
   campoBusca = new FormControl();
   mensagemErro = '';
+  livrosResultado: LivrosResultado;
 
   constructor(private service: LivroService) {}
 
@@ -23,10 +24,18 @@ export class ListaLivrosComponent {
     filter((valorDigitado) => valorDigitado.length > 3),
     distinctUntilChanged(),
     switchMap((valorDigitado) => this.service.buscar(valorDigitado)),
+    map((resultado) => (this.livrosResultado = resultado)),
+    map((resultado) => resultado.items ?? []),
     map((items) => this.livrosResultadosParaLivros(items)),
-    catchError(erro => {
+    catchError((erro) => {
       console.log(erro);
-      return throwError(() => new Error(this.mensagemErro = 'Ops, algo deu errado! recarregue a página e tente novamente'));
+      return throwError(
+        () =>
+          new Error(
+            (this.mensagemErro =
+              'Ops, algo deu errado! recarregue a página e tente novamente')
+          )
+      );
     })
   );
 
